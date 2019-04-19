@@ -32,6 +32,7 @@ class Cat:
         self.health = 100
         self.behavior = 0
         self.gotospot = 0
+        self.speed = 3
         self.w, self.h = char['right'][0].get_rect().size
 
     def draw(self, win):
@@ -63,11 +64,11 @@ class Cat:
             if abs(player.x - self.x) < 50:
                 self.still = True
             elif player.x < self.x:
-                self.x -= 5
+                self.x -= self.speed
                 self.dir = 'left'
                 self.still = False
             elif player.x > self.x:
-                self.x += 5
+                self.x += self.speed
                 self.dir = 'right'
                 self.still = False
             if player.y < self.y and abs(self.x-player.x) < 100:
@@ -84,11 +85,11 @@ class Cat:
                 y = plat.y
                 self.gotospot = (x, y)
             if self.gotospot[0] < self.x:
-                self.x -= 5
+                self.x -= self.speed
                 self.dir = 'left'
                 self.still = False
             elif self.gotospot[0] > self.x:
-                self.x += 5
+                self.x += self.speed
                 self.dir = 'right'
                 self.still = False
             else:

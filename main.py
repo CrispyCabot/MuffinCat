@@ -19,7 +19,9 @@ def main():
 
     platforms = getPlatforms()
 
-    cats = [Cat(randint(0,width),200)]
+    cats = []
+
+    diff = 3
     
     click1 = 0
     click2 = 0
@@ -39,14 +41,18 @@ def main():
                     click1 = 0
         clock.tick(60)
 
-        if time.time() - tStart > 3:
-            cats.append(Cat(randint(0,width), 100))
+        if time.time() - tStart > diff:
+            cats.append(Cat(randint(0,width), 0))
             tStart = time.time()
+            diff -= .02
         keys = pygame.key.get_pressed()
         if keys[K_q] or keys[K_ESCAPE]:
             playing = False
             for i in platforms:
                 print('Plat'+str((i.x, i.y, i.w, i.h)))
+            return False
+        if keys[K_r]:
+            return True
         player.move(keys, platforms)
         for i in cats:
             i.move(player, platforms)
@@ -56,6 +62,8 @@ def main():
                     if i.health <= 0:
                         if i in cats:
                             cats.remove(i)
+                    player.shots.remove(x)
+                elif x.x < -50 or x.x > width+50:
                     player.shots.remove(x)
             if abs(i.x-player.x) < 100 and abs(i.y-player.y) < 50:
                 player.health -= .5
@@ -102,8 +110,11 @@ def getPlatforms():
         Plat(600,height-250, 150,20)
     ]
     possible.append(layout)
+    layout = [Plat(0, 550, 1000, 50)]
+    possible.append(layout)
 
     return possible[randint(0,len(possible)-1)]
 
 
-main()
+while main():
+    main()
