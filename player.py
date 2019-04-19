@@ -32,6 +32,7 @@ class Player:
         self.jump = True
         self.jumpVelStart = 24
         self.jumpVel = 0
+        self.health = 100
 
         self.shots = []
     
@@ -45,6 +46,11 @@ class Player:
             self.x -= self.speed
         if keys[K_UP]:
             self.jump = True
+        if keys[K_DOWN] and not self.jump:
+            self.jump = True
+            self.jumpVel = 0
+            self.y += 5
+            self.lastY = self.y
         if keys[K_SPACE]:
             if self.dir == 'right':
                 self.shots.append(Shot(self.x+60, self.y-46, self.dir))
@@ -69,6 +75,8 @@ class Player:
                 self.jump = True
                 self.jumpVel = 0
     def draw(self, win):
+        for i in self.shots:
+            i.draw(win)
         self.frameDelay += 1
         if self.frameDelay >= self.frameDelayMax:
             self.frameDelay = 0
@@ -79,8 +87,9 @@ class Player:
         loc = img.get_rect()
         loc.midbottom = (self.x, self.y+30)
         win.blit(img, loc)
-        for i in self.shots:
-            i.draw(win)
+        if self.health < 100:
+            pygame.draw.rect(win, (100,255,100), pygame.Rect(self.x-50,self.y-120,self.health,20))
+            pygame.draw.rect(win, (255,100,100), pygame.Rect(self.x-50+self.health,self.y-120,100-self.health,20))
 
 class Shot:
     def __init__(self, x, y, dir):
