@@ -59,14 +59,17 @@ def main():
             for x in player.shots:
                 if x.x < i.x+i.w/2-60 and x.x > i.x-i.w/2+60 and x.y < i.y and x.y > i.y-i.h:
                     i.health -= 3  
-                    if i.health <= 0:
-                        if i in cats:
-                            cats.remove(i)
                     player.shots.remove(x)
                 elif x.x < -50 or x.x > width+50:
                     player.shots.remove(x)
             if abs(i.x-player.x) < 100 and abs(i.y-player.y) < 50:
                 player.health -= .5
+            if player.explode:
+                if abs(i.x-player.x) < 150 and abs(i.y-player.y) < 150:
+                    i.health -= 7
+            if i.health <= 0:
+                if i in cats:
+                    cats.remove(i)
 
         redraw(player, platforms, cats)
 

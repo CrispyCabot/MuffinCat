@@ -19,6 +19,13 @@ for i in range(0,106):
     img = pygame.transform.flip(img, True, False)
     char['left'].append(img)
 
+explosion = []
+for i in range(12):
+    img = pygame.image.load(PATH+os.path.join('data', 'explosion', str(i)+'.gif'))
+    w, h = img.get_rect().size
+    img = pygame.transform.scale(img, (int(1.8*w*size), int(1.8*h*size)))
+    explosion.append(img)
+
 class Player:
     def __init__(self, x, y):
         self.x = x
@@ -33,20 +40,22 @@ class Player:
         self.jumpVelStart = 24
         self.jumpVel = 0
         self.health = 100
+        self.explode = False
+        self.explodeCounter = 0
 
         self.shots = []
     
     def move(self, keys, platforms):
         self.lastY = self.y
-        if keys[K_RIGHT]:
+        if keys[K_RIGHT] or keys[K_d]:
             self.dir = 'right'
             self.x += self.speed
-        if keys[K_LEFT]:
+        if keys[K_LEFT] or keys[K_a]:
             self.dir = 'left'
             self.x -= self.speed
-        if keys[K_UP]:
+        if keys[K_UP] or keys[K_w]:
             self.jump = True
-        if keys[K_DOWN] and not self.jump:
+        if (keys[K_DOWN] or keys[K_s]) and not self.jump:
             self.jump = True
             self.jumpVel = 0
             self.y += 5
@@ -56,6 +65,8 @@ class Player:
                 self.shots.append(Shot(self.x+60, self.y-46, self.dir))
             else:
                 self.shots.append(Shot(self.x-60, self.y-46, self.dir))
+        if keys[K_RSHIFT] and not self.explode: #right shift
+            self.explode = True
         if self.jump:
             self.y -= self.jumpVel
             self.jumpVel -= 2
@@ -79,10 +90,20 @@ class Player:
             i.draw(win)
         self.frameDelay += 1
         if self.frameDelay >= self.frameDelayMax:
+            if self.explode:
+                self.explodeCounter += 1
+                if self.explodeCounter >= 12:
+                    self.explode = False
+                    self.explodeCounter = 0
             self.frameDelay = 0
             self.frameCounter += 1
             if self.frameCounter > 105:
                 self.frameCounter = 0
+        if self.explode:
+            img = explosion[self.explodeCounter]
+            loc = img.get_rect()
+            loc.center = (self.x, self.y-50)
+            win.blit(img, loc)
         img = char[self.dir][self.frameCounter]
         loc = img.get_rect()
         loc.midbottom = (self.x, self.y+30)
