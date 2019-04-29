@@ -51,7 +51,9 @@ class Cat:
             pygame.draw.rect(win, (100,255,100), pygame.Rect(self.x-50,self.y-100,self.health,20))
             pygame.draw.rect(win, (255,100,100), pygame.Rect(self.x-50+self.health, self.y-100,100-self.health,20))
 
-    def move(self, player, platforms):
+    def move(self, player, platforms, movement):
+        for i in movement:
+            self.x += i
         if randint(0,200) == 1:
             self.behavior = randint(0,1)
             if self.behavior == 1:

@@ -44,15 +44,21 @@ class Player:
         self.explodeCounter = 0
 
         self.shots = []
+
+        self.movement = []
+        self.relativeX = x
     
     def move(self, keys, platforms):
         self.lastY = self.y
+        self.movement = []
         if keys[K_RIGHT] or keys[K_d]:
             self.dir = 'right'
-            self.x += self.speed
+            self.relativeX += self.speed
+            self.movement.append(-self.speed)
         if keys[K_LEFT] or keys[K_a]:
             self.dir = 'left'
-            self.x -= self.speed
+            self.relativeX -= self.speed
+            self.movement.append(self.speed)
         if keys[K_UP] or keys[K_w]:
             self.jump = True
         if (keys[K_DOWN] or keys[K_s]) and not self.jump:
@@ -62,9 +68,9 @@ class Player:
             self.lastY = self.y
         if keys[K_SPACE]:
             if self.dir == 'right':
-                self.shots.append(Shot(self.x+60, self.y-46, self.dir))
+                self.shots.append(Shot(self.x+70, self.y-49, self.dir))
             else:
-                self.shots.append(Shot(self.x-60, self.y-46, self.dir))
+                self.shots.append(Shot(self.x-70, self.y-49, self.dir))
         if keys[K_RSHIFT] and not self.explode: #right shift
             self.explode = True
         if self.jump:
@@ -85,9 +91,10 @@ class Player:
             if hovering:
                 self.jump = True
                 self.jumpVel = 0
-    def draw(self, win):
+        return self.movement
+    def draw(self, win, movement):
         for i in self.shots:
-            i.draw(win)
+            i.draw(win, movement)
         self.frameDelay += 1
         if self.frameDelay >= self.frameDelayMax:
             if self.explode:
@@ -119,7 +126,9 @@ class Shot:
         self.dir = dir
         self.vel = 15
 
-    def draw(self, win):
+    def draw(self, win, movement):
+        for i in movement:
+            self.x += i
         pygame.draw.rect(win, (255,0,0), pygame.Rect(self.x, self.y, 10,5))
         if self.dir == 'right':
             self.x += self.vel
