@@ -5,7 +5,7 @@ from player import Player
 from ledge import Plat
 from cat import Cat
 from random import randint
-from enemy import Lobster
+from enemy import Lobster, Spider
 import time
 
 pygame.init()
@@ -18,47 +18,22 @@ def main():
 
     clock = pygame.time.Clock()
 
-    platMap = [getPlatforms(-width), getPlatforms(), getPlatforms(width)]
+    platMap = [getPlatforms(-width), getPlatforms()]
     
     platforms = []
     enemies = []
-    for i in platMap[0][0]:
-        platforms.append(i)
-    for i in platMap[0][1]:
-        enemies.append(i)
-    for i in platMap[1][0]:
-        platforms.append(i)
-    for i in platMap[1][1]:
-        enemies.append(i)
-    for i in platMap[2][0]:
-        platforms.append(i)
-    for i in platMap[2][1]:
-        enemies.append(i)
-    
-    click1 = 0
-    click2 = 0
 
     playing = True
-    tStart = time.time()
     while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
-            if event.type == pygame.MOUSEBUTTONUP:
-                if click1 == 0:
-                    click1 = pygame.mouse.get_pos()
-                else:
-                    click2 = pygame.mouse.get_pos()
-                    platforms.append(Plat(click1[0], click1[1], click1[0]-click1[0], click2[1]-click1[1]))
-                    click1 = 0
         clock.tick(60)
 
-        platforms, enemies = checkPlatforms(platMap, platforms, player)
+        platforms, enemies = checkPlatforms(platMap, enemies, player)
         keys = pygame.key.get_pressed()
         if keys[K_q] or keys[K_ESCAPE]:
             playing = False
-            for i in platforms:
-                print('Plat'+str((i.x, i.y, i.w, i.h)))
             return False
         if keys[K_r]:
             return True
@@ -70,6 +45,26 @@ def main():
             for x in movement:
                 i.x += x
 
+        for i in player.shots:
+            if i.x > width+20 or i.x < -20:
+                player.shots.remove(i)
+                break
+            for x in enemies:
+                if i.x < x.x+x.w/2 and i.x > x.x-x.w/2 and i.y < x.y and i.y > x.y-x.h:
+                    x.health -= 5
+                    player.shots.remove(i)
+                    if x.health < 0:
+                        enemies.remove(x)
+                    break
+        for i in enemies:
+            for x in i.shots:
+                if x.x > width+20 or x.x < -20:
+                    i.shots.remove(x)
+                    continue
+                if x.x > player.x-50 and x.x < player.x+50 and x.y < player.y and x.y > player.y - player.h:
+                    player.health -= 5
+                    i.shots.remove(x)
+
         redraw(player, platforms, enemies, movement)
 
 def redraw(player, platforms, enemies, movement):
@@ -77,74 +72,70 @@ def redraw(player, platforms, enemies, movement):
     for i in platforms:
         i.draw(win)
     for i in enemies:
-        i.draw(win, player)
+        i.draw(win, player, movement)
     player.draw(win, movement)
     pygame.display.update()
 
 def getPlatforms(x=0):
-    return [Plat(0+x, 550, 1000, 50)], [Lobster(200+x,500)]
+   # return [Plat(0+x, 550, 1000, 50)], [Lobster(200+x,520), Spider(400+x, 520)]
     possible = []
     enemies = []
-    layout = [
-        Plat(0+x, 550, 1000, 50),
-        Plat(204+x, 433, 651, 31),
-        Plat(418+x, 306, 356, 50),
-        Plat(560+x, 207, 169, 25),
-        Plat(645+x, 124, 46, 8),
-        Plat(125+x, 219, 184, 45)
-    ]
-    possible.append((layout, enemies))
-    layout = [
-        Plat(0+x, 550, 1000, 50),
-        Plat(3+x, 2, 990, 246),
-        Plat(26+x, 428, 189, 30),
-        Plat(419+x, 428, 189, 30),
-        Plat(736+x, 428, 189, 30)
-    ]
-    possible.append((layout, enemies))
-    layout = [
-        Plat(0+x, 550, 1000, 50),
-        Plat(100+x,height-150, 100,20),
-        Plat(300+x, height-150, 100,20),
-        Plat(500+x, height-150, 100,20),
-        Plat(700+x, height-150, 100,20),
-        Plat(700+x, height-150, 100,20),
-        Plat(200+x,height-250, 150,20),
-        Plat(400+x,height-250, 150,20),
-        Plat(600+x,height-250, 150,20)
-    ]
 
+    layout = [
+        Plat(x+52,456,882,111)
+        ]
+    enemies = [
+        Spider(861+x, 422),
+        Lobster(448+x, 418),
+        Lobster(581+x, 413)
+        ]
     possible.append((layout, enemies))
-    layout = [Plat(0+x, 550, 1000, 50)]
+
+    layout = [
+        Plat(x+17,506,971,68),
+        Plat(x+101,423,806,34),
+        Plat(x+190,341,648,25),
+        Plat(x+284,269,487,38),
+        Plat(x+358,196,350,33),
+        Plat(x+435,143,223,23),
+        Plat(x+491,74,123,19)
+        ]
+    enemies = [
+        Lobster(551+x, 45),
+        Spider(617+x, 117),
+        Spider(655+x, 168),
+        Spider(716+x, 241),
+        Spider(783+x, 313),
+        Spider(847+x, 395),
+        Spider(924+x, 477)
+        ]
     possible.append((layout, enemies))
 
     val = possible[randint(0,len(possible)-1)]
     return val[0], val[1]
 
-def checkPlatforms(platMap, platforms, player):
+def checkPlatforms(platMap, enemies, player):
     pos = round(player.relativeX / width)
     pos += 1
     plats = []
-    enemies = []
+    try:
+        for i in platMap[pos-2][0]:
+            plats.append(i)
+    except IndexError:
+        pass
     try:
         for i in platMap[pos-1][0]:
             plats.append(i)
-        for i in platMap[pos-1][1]:
-            enemies.append(i)
     except IndexError:
         pass
     try:
         for i in platMap[pos][0]:
             plats.append(i)
-        for i in platMap[pos][1]:
-            enemies.append(i)
     except IndexError:
         pass
     try:
         for i in platMap[pos+1][0]:
             plats.append(i)
-        for i in platMap[pos+1][1]:
-            enemies.append(i)
     except IndexError:
         platMap.append(getPlatforms(width))
         for i in platMap[pos+1][0]:
@@ -152,7 +143,6 @@ def checkPlatforms(platMap, platforms, player):
         for i in platMap[pos+1][1]:
             enemies.append(i)
     return plats, enemies
-
 
 while main():
     main()

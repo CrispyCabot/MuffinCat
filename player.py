@@ -26,10 +26,14 @@ for i in range(12):
     img = pygame.transform.scale(img, (int(1.8*w*size), int(1.8*h*size)))
     explosion.append(img)
 
+pheight, pwidth = char['right'][0].get_rect().size
+
 class Player:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.h = pheight
+        self.w = pwidth
         self.lastY = y
         self.speed = 10
         self.frameCounter = 0
