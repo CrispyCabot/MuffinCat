@@ -76,11 +76,17 @@ while playing:
 
 print('layout = [')
 for i in plats:
-    print('Plat(x+'+str(i.x)+','+str(i.y)+','+str(i.w)+','+str(i.h)+')')
+    comma = ','
+    if plats.index(i) == len(plats)-1:
+        comma = ''
+    print('\tPlat(x+'+str(i.x)+','+str(i.y)+','+str(i.w)+','+str(i.h)+')'+comma)
 print(']')
 print('enemies = [')
 for i in enemies:
-    print(i.info())
+    comma = ','
+    if enemies.index(i) == len(enemies)-1:
+        comma = ''
+    print('\t'+i.info()+comma)
 print(']\npossible.append((layout, enemies))')
 
 pygame.quit()

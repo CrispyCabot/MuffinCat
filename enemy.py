@@ -35,6 +35,7 @@ class Lobster(Enemy):
         self.frameCounterMax = 5
         self.frameDelay = 0
         self.w, self.h = lobsterL[0].get_rect().size
+        self.w -= 20
 
     def info(self):
         return 'Lobster('+str(self.x)+'+x, '+str(self.y)+')'

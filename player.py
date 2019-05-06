@@ -33,6 +33,7 @@ class Player:
         self.x = x
         self.y = y
         self.h = pheight
+        self.h -= 150
         self.w = pwidth
         self.lastY = y
         self.speed = 10
