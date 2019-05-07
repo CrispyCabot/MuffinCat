@@ -68,7 +68,6 @@ class Player:
             self.relativeX -= self.speed
             self.movement.append(self.speed)
         if keys[K_UP] or keys[K_w]:
-            print(time.time() - self.firstJump)
             if self.jump and not self.doubleJump and time.time() - self.firstJump > .1:
                 self.doubleJump = True
                 self.jumpVel = self.jumpVelStart

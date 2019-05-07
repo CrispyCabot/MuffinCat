@@ -1,12 +1,13 @@
 import pygame
 from pygame.locals import *
-from config import width, height
+from config import width, height, PATH, size
 from player import Player
 from ledge import Plat
 from cat import Cat
 from random import randint
 from enemy import Lobster, Spider
 import time
+import os
 
 pygame.init()
 
@@ -16,6 +17,18 @@ pygame.display.set_caption('if u r reading this ur dumb')
 font = pygame.font.SysFont('', 34)
 bigFont = pygame.font.SysFont('', 94)
 medFont = pygame.font.SysFont('', 55)
+
+sun = []
+for i in range(60):
+    img = pygame.image.load(PATH+os.path.join('data', 'sun', str(i)+'.gif'))
+    w, h = img.get_rect().size
+    img = pygame.transform.scale(img, (int(w*size*2), int(h*size*2)))
+    sun.append(img)
+
+col = 0
+colM = .5
+
+sunFrameCounter = 0
 
 def main():
     player = Player(width/2,100)
@@ -29,6 +42,9 @@ def main():
 
     tim = time.time()
     maxTime = 60
+
+    scoreboard = open('scoreboard.txt', 'r')
+    scores = scoreboard.readlines()
 
     playing = True
     gameOver = True
@@ -92,30 +108,43 @@ def main():
             return True
         drawEnd(player, platforms, enemies)
 
+def drawBackground(win):
+    global col, colM, sunFrameCounter
+    col += colM
+    if col > 255 or col < 0:
+        col -= colM
+        colM = colM*-1
+    win.fill((int(col),int(col),int(col)))
+    if col > 127: #daytime
+        sunFrameCounter += 1
+        if sunFrameCounter > 59:
+            sunFrameCounter = 0
+        win.blit(sun[sunFrameCounter], (100,100))
+
 def redraw(player, platforms, enemies, movement, tim, maxTime):
-    win.fill((255,255,255))
+    drawBackground(win)
     for i in platforms:
         i.draw(win)
     for i in enemies:
         i.draw(win, player, movement)
     player.draw(win, movement)
-    text = font.render('Score: '+str(int((player.relativeX-500)/100)), True, (0,0,0))
+    text = font.render('Score: '+str(int((player.relativeX-500)/100)), True, (255-col,255-col,255-col))
     loc = text.get_rect()
     loc.topleft = (10,10)
     win.blit(text, loc)
-    text = font.render('Time: '+str(int(maxTime-(time.time()-tim))), True, (0,0,0))
+    text = font.render('Time: '+str(int(maxTime-(time.time()-tim))), True, (255-col,255-col,255-col))
     loc = text.get_rect()
     loc.topright = (width-10, 10)
     win.blit(text, loc)
     pygame.display.update()
 
 def drawEnd(player, platforms, enemies):
-    win.fill((255,255,255))
+    win.fill((col,col,col))
     for i in platforms:
         i.draw(win)
     for i in enemies:
         i.draw(win, player, [])
-    text = font.render('Score: '+str(int((player.relativeX-500)/100)), True, (0,0,0))
+    text = font.render('Score: '+str(int((player.relativeX-500)/100)), True, (255-col,255-col,255-col))
     loc = text.get_rect()
     loc.topleft = (10,10)
     win.blit(text, loc)
@@ -136,6 +165,18 @@ def getPlatforms(x=0):
         return [Plat(0, 550, 1000, 50)], []
     possible = []
     enemies = []
+
+    layout = [
+        Plat(x+41,529,149,30),
+        Plat(x+234,570,197,26),
+        Plat(x+453,433,77,21),
+        Plat(x+612,304,332,27)
+    ]
+    enemies = [
+            Lobster(781+x, 278),
+            Spider(491+x, 408)
+    ]
+    possible.append((layout, enemies))
 
     layout = [
         Plat(x+15,503,164,43),
@@ -177,29 +218,6 @@ def getPlatforms(x=0):
             Lobster(592+x, 320),
             Spider(796+x, 323),
             Lobster(247+x, 493)
-    ]
-    possible.append((layout, enemies))
-
-    layout = [
-        Plat(x+15,528,132,39),
-        Plat(x+69,449,136,28),
-        Plat(x+129,368,138,28),
-        Plat(x+193,271,138,25),
-        Plat(x+286,172,156,30),
-        Plat(x+409,94,183,24),
-        Plat(x+767,91,158,33),
-        Plat(x+779,198,143,40),
-        Plat(x+792,302,131,38),
-        Plat(x+788,388,147,38),
-        Plat(x+766,475,196,37)
-    ]
-    enemies = [
-            Spider(913+x, 452),
-            Spider(864+x, 361),
-            Spider(857+x, 274),
-            Spider(853+x, 171),
-            Spider(849+x, 67),
-            Lobster(208+x, 340)
     ]
     possible.append((layout, enemies))
 
