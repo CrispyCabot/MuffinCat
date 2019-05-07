@@ -119,7 +119,14 @@ def drawBackground(win):
         sunFrameCounter += 1
         if sunFrameCounter > 59:
             sunFrameCounter = 0
-        win.blit(sun[sunFrameCounter], (100,100))
+        if colM < 0:
+            x = ((128+255-col) * 5) - 300
+            print('asdlfkj')
+        else:
+            x = ((col-127) * 5) - 200
+        y = 1/1000*(x)**2 #x is decreasing not y
+        print(x,y)
+        win.blit(sun[sunFrameCounter], (x,y))
 
 def redraw(player, platforms, enemies, movement, tim, maxTime):
     drawBackground(win)
