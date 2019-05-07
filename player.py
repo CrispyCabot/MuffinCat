@@ -2,6 +2,7 @@ import pygame
 from config import PATH, width, height, size
 import os
 from pygame.locals import *
+import time
 
 char = {
     'right': [],
@@ -47,6 +48,8 @@ class Player:
         self.health = 100
         self.explode = False
         self.explodeCounter = 0
+        self.doubleJump = False
+        self.firstJump = 0
 
         self.shots = []
 
@@ -65,7 +68,13 @@ class Player:
             self.relativeX -= self.speed
             self.movement.append(self.speed)
         if keys[K_UP] or keys[K_w]:
-            self.jump = True
+            print(time.time() - self.firstJump)
+            if self.jump and not self.doubleJump and time.time() - self.firstJump > .1:
+                self.doubleJump = True
+                self.jumpVel = self.jumpVelStart
+            else:
+                self.jump = True
+                self.firstJump = time.time()
         if (keys[K_DOWN] or keys[K_s]) and not self.jump:
             self.jump = True
             self.jumpVel = 0
@@ -85,6 +94,7 @@ class Player:
                 hit, val = i.hit(self.x, self.y, self.lastY)
                 if hit:
                     self.jump = False
+                    self.doubleJump = False
                     self.y = val
                     self.jumpVel = self.jumpVelStart
         else:

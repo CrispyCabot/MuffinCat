@@ -14,18 +14,24 @@ win = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 pygame.display.set_caption('if u r reading this ur dumb')
 
 font = pygame.font.SysFont('', 34)
+bigFont = pygame.font.SysFont('', 94)
+medFont = pygame.font.SysFont('', 55)
 
 def main():
     player = Player(width/2,100)
 
     clock = pygame.time.Clock()
 
-    platMap = [getPlatforms(-width), getPlatforms()]
+    platMap = [getPlatforms(-width), getPlatforms(420)]
     
     platforms = []
     enemies = []
 
+    tim = time.time()
+    maxTime = 60
+
     playing = True
+    gameOver = True
     while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -35,7 +41,6 @@ def main():
         platforms, enemies = checkPlatforms(platMap, enemies, player)
         keys = pygame.key.get_pressed()
         if keys[K_q] or keys[K_ESCAPE]:
-            playing = False
             return False
         if keys[K_r]:
             return True
@@ -63,15 +68,31 @@ def main():
                     i.shots.remove(x)
                     continue
                 if x.x > player.x-50 and x.x < player.x+50 and x.y < player.y and x.y > player.y - player.h:
-                    player.health -= 5
+                    player.health -= 4
                     i.shots.remove(x)
             if type(i) is Lobster:
                 if abs(i.x-player.x) < 50 and abs(i.y - player.y) < 50:
-                    player.health -= 1
+                    player.health -= .5
+        
+        if player.health <= 0 or maxTime-(time.time()-tim) <= 0 or player.y > height+100:
+            playing = False
 
-        redraw(player, platforms, enemies, movement)
+        redraw(player, platforms, enemies, movement, tim, maxTime)
+    
+    while gameOver:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                playing = False
+        clock.tick(60)
 
-def redraw(player, platforms, enemies, movement):
+        keys = pygame.key.get_pressed()
+        if keys[K_q] or keys[K_ESCAPE]:
+            return False
+        if keys[K_r]:
+            return True
+        drawEnd(player, platforms, enemies)
+
+def redraw(player, platforms, enemies, movement, tim, maxTime):
     win.fill((255,255,255))
     for i in platforms:
         i.draw(win)
@@ -82,10 +103,37 @@ def redraw(player, platforms, enemies, movement):
     loc = text.get_rect()
     loc.topleft = (10,10)
     win.blit(text, loc)
+    text = font.render('Time: '+str(int(maxTime-(time.time()-tim))), True, (0,0,0))
+    loc = text.get_rect()
+    loc.topright = (width-10, 10)
+    win.blit(text, loc)
     pygame.display.update()
+
+def drawEnd(player, platforms, enemies):
+    win.fill((255,255,255))
+    for i in platforms:
+        i.draw(win)
+    for i in enemies:
+        i.draw(win, player, [])
+    text = font.render('Score: '+str(int((player.relativeX-500)/100)), True, (0,0,0))
+    loc = text.get_rect()
+    loc.topleft = (10,10)
+    win.blit(text, loc)
+    text = bigFont.render('Game Over', True, (255,102,102))
+    loc = text.get_rect()
+    loc.midtop = (width/2, 20)
+    win.blit(text, loc)
+    text = medFont.render('Scoreboard', True, (218,165,32))
+    loc = text.get_rect()
+    loc.midtop = (width/2, 100)
+    win.blit(text, loc)
+    pygame.display.update()
+    
 
 def getPlatforms(x=0):
    # return [Plat(0+x, 550, 1000, 50)], [Lobster(200+x,520), Spider(400+x, 520)]
+    if x == 420:
+        return [Plat(0, 550, 1000, 50)], []
     possible = []
     enemies = []
 
@@ -152,6 +200,17 @@ def getPlatforms(x=0):
             Spider(853+x, 171),
             Spider(849+x, 67),
             Lobster(208+x, 340)
+    ]
+    possible.append((layout, enemies))
+
+    layout = [
+        Plat(x+29,510,260,41),
+        Plat(x+346,394,80,28),
+        Plat(x+527,304,66,27),
+        Plat(x+834,517,148,43)
+    ]
+    enemies = [
+            Spider(910+x, 488)
     ]
     possible.append((layout, enemies))
 
