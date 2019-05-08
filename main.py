@@ -45,13 +45,19 @@ def main():
 
     scoreboard = open('scoreboard.txt', 'r')
     scores = scoreboard.readlines()
+    
+    for i in scores: #removes \n
+        scores[scores.index(i)] = i.rstrip('\n')
+
+    newScoreIndex = 10
+    nameInput = ''
 
     playing = True
     gameOver = True
     while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                playing = False
+                return False
         clock.tick(60)
 
         platforms, enemies = checkPlatforms(platMap, enemies, player)
@@ -83,22 +89,57 @@ def main():
                 if x.x > width+20 or x.x < -20:
                     i.shots.remove(x)
                     continue
-                if x.x > player.x-50 and x.x < player.x+50 and x.y < player.y and x.y > player.y - player.h:
+                if x.x > player.x-player.w/2 and x.x < player.x+player.w/2 and x.y < player.y and x.y > player.y - player.h:
                     player.health -= 4
                     i.shots.remove(x)
             if type(i) is Lobster:
-                if abs(i.x-player.x) < 50 and abs(i.y - player.y) < 50:
+                if abs(i.x-player.x) < player.w and abs(i.y - player.y) < player.h/2:
                     player.health -= .5
         
         if player.health <= 0 or maxTime-(time.time()-tim) <= 0 or player.y > height+100:
             playing = False
+            newHiScore, newScoreIndex = checkHighScore(int((player.relativeX-500)/100), scores)
 
         redraw(player, platforms, enemies, movement, tim, maxTime)
+        pygame.display.update()
+
+    while newHiScore:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return False
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN:
+                    newHiScore = False
+                elif event.key == K_BACKSPACE:
+                    nameInput = nameInput[:-1]
+                else:
+                    nameInput += event.unicode
+        redraw(player, platforms, enemies, movement, tim, maxTime)
+        text = bigFont.render('New High Score', True, (255,255,0))
+        loc = text.get_rect()
+        loc.center = (width/2, 100)
+        win.blit(text, loc)
+        text = medFont.render('Enter your name', True, (100,100,0))
+        loc = text.get_rect()
+        loc.center = (width/2, 175)
+        win.blit(text, loc)
+        text = medFont.render(nameInput, True, (100,255,0))
+        loc = text.get_rect()
+        loc.center = (width/2, 250)
+        win.blit(text, loc)
+        pygame.display.update()
+    
+    if newScoreIndex != 10:
+        scores.insert(newScoreIndex, nameInput + ' '+str(int((player.relativeX-500)/100)))
+        scores.pop(5)
+        file = open('scoreboard.txt', 'w')
+        for i in scores:
+            file.write(i+'\n')
     
     while gameOver:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                playing = False
+                return False
         clock.tick(60)
 
         keys = pygame.key.get_pressed()
@@ -106,10 +147,23 @@ def main():
             return False
         if keys[K_r]:
             return True
-        drawEnd(player, platforms, enemies)
+        drawEnd(player, platforms, enemies, scores)
+        pygame.display.update()
+
+def checkHighScore(x, scores):
+    scoreVals = []
+    for i in scores:
+        scoreVals.append(i.split()[1])
+    for i in range(0, len(scoreVals)-1):
+        if x > int(scoreVals[i]):
+            return True, i
+    return False, 10
+
+sunX, sunY = -500, 200
+sunYVel = 2
 
 def drawBackground(win):
-    global col, colM, sunFrameCounter
+    global col, colM, sunFrameCounter, sunX, sunY, sunYVel
     col += colM
     if col > 255 or col < 0:
         col -= colM
@@ -119,14 +173,15 @@ def drawBackground(win):
         sunFrameCounter += 1
         if sunFrameCounter > 59:
             sunFrameCounter = 0
-        if colM < 0:
-            x = ((128+255-col) * 5) - 300
-            print('asdlfkj')
-        else:
-            x = ((col-127) * 5) - 200
-        y = 1/1000*(x)**2 #x is decreasing not y
-        print(x,y)
-        win.blit(sun[sunFrameCounter], (x,y))
+
+        sunX += 4
+        sunY -= sunYVel
+        sunYVel -= .015
+        
+        win.blit(sun[sunFrameCounter], (sunX,sunY))
+    else:
+        sunX, sunY = -500, 200
+        sunYVel = 2
 
 def redraw(player, platforms, enemies, movement, tim, maxTime):
     drawBackground(win)
@@ -143,9 +198,10 @@ def redraw(player, platforms, enemies, movement, tim, maxTime):
     loc = text.get_rect()
     loc.topright = (width-10, 10)
     win.blit(text, loc)
-    pygame.display.update()
+    #Hitbox
+    pygame.draw.rect(win, (255,0,0), pygame.Rect(player.x - player.w/2, player.y - player.h, player.w, player.h), 2)
 
-def drawEnd(player, platforms, enemies):
+def drawEnd(player, platforms, enemies, scores):
     win.fill((col,col,col))
     for i in platforms:
         i.draw(win)
@@ -163,7 +219,18 @@ def drawEnd(player, platforms, enemies):
     loc = text.get_rect()
     loc.midtop = (width/2, 100)
     win.blit(text, loc)
-    pygame.display.update()
+    ycounter = 175
+    for i in scores:
+        things = i.split()
+        text = font.render(things[0], True, (255,255,0))
+        loc = text.get_rect()
+        loc.topleft = (width/2-100, ycounter)
+        win.blit(text, loc)
+        text = font.render(things[1], True, (255,255,0))
+        loc = text.get_rect()
+        loc.topright = (width/2+100, ycounter)
+        win.blit(text, loc)
+        ycounter += 50
     
 
 def getPlatforms(x=0):

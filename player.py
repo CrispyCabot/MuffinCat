@@ -34,8 +34,9 @@ class Player:
         self.x = x
         self.y = y
         self.h = pheight
-        self.h -= 150
+        self.h -= 100
         self.w = pwidth
+        self.w -= 100
         self.lastY = y
         self.speed = 10
         self.frameCounter = 0
