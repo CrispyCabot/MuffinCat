@@ -100,6 +100,17 @@ class Shot:
         self.x = x
         self.y = y
         self.vel = vel
+        self.col = [0,255,0]
+        self.timer = 0
     def draw(self, win):
-        pygame.draw.circle(win, (0,255,0), (int(self.x), int(self.y)), 10)
+        pygame.draw.circle(win, self.col, (int(self.x), int(self.y)), 10)
         self.x += self.vel
+        self.timer += 1
+        if self.timer > 10:
+            self.timer = 0
+            if self.col[1] == 255:
+                self.col[1] = 0
+                self.col[0] = 255
+            elif self.col[0] == 255:
+                self.col[0] = 0
+                self.col[1] = 255

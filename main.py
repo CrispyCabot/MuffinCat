@@ -8,6 +8,7 @@ from random import randint
 from enemy import Lobster, Spider
 import time
 import os
+from star import Star
 
 pygame.init()
 
@@ -161,15 +162,17 @@ def checkHighScore(x, scores):
 
 sunX, sunY = -500, 200
 sunYVel = 2
+stars = []
 
 def drawBackground(win):
-    global col, colM, sunFrameCounter, sunX, sunY, sunYVel
+    global col, colM, sunFrameCounter, sunX, sunY, sunYVel, stars
     col += colM
     if col > 255 or col < 0:
         col -= colM
         colM = colM*-1
     win.fill((int(col),int(col),int(col)))
     if col > 127: #daytime
+        stars = []
         sunFrameCounter += 1
         if sunFrameCounter > 59:
             sunFrameCounter = 0
@@ -182,6 +185,12 @@ def drawBackground(win):
     else:
         sunX, sunY = -500, 200
         sunYVel = 2
+        if colM < 0:
+            if col%5 == 0:
+                stars.append(Star(randint(-100,0), randint(0,600)))
+        for i in stars:
+            i.draw(win)
+
 
 def redraw(player, platforms, enemies, movement, tim, maxTime):
     drawBackground(win)
@@ -199,7 +208,7 @@ def redraw(player, platforms, enemies, movement, tim, maxTime):
     loc.topright = (width-10, 10)
     win.blit(text, loc)
     #Hitbox
-    pygame.draw.rect(win, (255,0,0), pygame.Rect(player.x - player.w/2, player.y - player.h, player.w, player.h), 2)
+    #pygame.draw.rect(win, (255,0,0), pygame.Rect(player.x - player.w/2, player.y - player.h, player.w, player.h), 2)
 
 def drawEnd(player, platforms, enemies, scores):
     win.fill((col,col,col))
@@ -215,20 +224,20 @@ def drawEnd(player, platforms, enemies, scores):
     loc = text.get_rect()
     loc.midtop = (width/2, 20)
     win.blit(text, loc)
-    text = medFont.render('Scoreboard', True, (218,165,32))
+    text = medFont.render('Scoreboard', True, (255,128,0))
     loc = text.get_rect()
     loc.midtop = (width/2, 100)
     win.blit(text, loc)
     ycounter = 175
     for i in scores:
         things = i.split()
-        text = font.render(things[0], True, (255,255,0))
+        text = font.render(things[0], True, (50,50,255))
         loc = text.get_rect()
-        loc.topleft = (width/2-100, ycounter)
+        loc.topright = (width/2-50, ycounter)
         win.blit(text, loc)
-        text = font.render(things[1], True, (255,255,0))
+        text = font.render(things[1], True, (50,50,255))
         loc = text.get_rect()
-        loc.topright = (width/2+100, ycounter)
+        loc.topleft = (width/2+50, ycounter)
         win.blit(text, loc)
         ycounter += 50
     
@@ -240,6 +249,28 @@ def getPlatforms(x=0):
     possible = []
     enemies = []
 
+    layout = [
+        Plat(x+75,331,219,48),
+        Plat(x+659,157,248,67)
+    ]
+    enemies = [
+    ]
+    possible.append((layout, enemies))
+
+    layout = [
+        Plat(x+45,509,70,26),
+        Plat(x+169,509,75,26),
+        Plat(x+323,509,79,23),
+        Plat(x+498,508,76,23),
+        Plat(x+626,505,73,26),
+        Plat(x+729,506,103,25),
+        Plat(x+405,301,164,30),
+        Plat(x+714,115,248,40)
+    ]
+    enemies = [
+            Lobster(485+x, 272)
+    ]
+    possible.append((layout, enemies))
     layout = [
         Plat(x+41,529,149,30),
         Plat(x+234,570,197,26),
